@@ -87,7 +87,7 @@ async def init():
 
     # Import all modules/plugins
     for all_module in ALL_MODULES:
-        importlib.import_module("ShrutiMusic.plugins." + all_module)
+        importlib.import_module("ShrutiMusic.plugins" + all_module)
 
     LOGGER("ShrutiMusic.plugins").info("Successfully Imported Modules...")
 
