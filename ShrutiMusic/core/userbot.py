@@ -1,7 +1,6 @@
 from pyrogram import Client
 import asyncio
 import config
-
 from ..logging import LOGGER
 
 assistants = []
@@ -46,10 +45,10 @@ class Userbot(Client):
         )
 
     async def join_all_support_centers(self, client):
-        # Remove if you don't want assistants to join support groups
+        # Optional: remove or implement if assistants need to join groups
         pass
 
-    async def start(self):
+    async def start(self) -> None:
         LOGGER(__name__).info("Starting Assistants...")
 
         for idx, client, session in [
@@ -63,8 +62,8 @@ class Userbot(Client):
                 await client.start()
                 assistants.append(idx)
                 assistant_id = client.me.id
+                assistant_username = getattr(client.me, "username", "NoUsername")
                 assistant_mention = client.me.mention
-                assistant_username = client.me.username
                 assistantids.append(assistant_id)
 
                 LOGGER(__name__).info(f"Assistant {idx} Started as {assistant_mention}")
@@ -75,9 +74,9 @@ class Userbot(Client):
                     LOGGER(__name__).error(
                         f"Assistant {idx} cannot access the log group. Add it and promote as admin!"
                     )
-                    exit()
+                    raise RuntimeError(f"Assistant {idx} cannot access log group")
 
-    async def stop(self):
+    async def stop(self) -> None:
         LOGGER(__name__).info("Stopping Assistants...")
         for client, session in [
             (self.one, config.STRING1),
