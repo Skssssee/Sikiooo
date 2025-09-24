@@ -16,12 +16,6 @@ logger = logging.getLogger(__name__)
 assistants = []     # list of assistant indices that were started (1..5)
 assistant_ids = []  # actual numeric user ids for started assistants
 
-# NOTE:
-# - Previously this file contained obfuscated support center names and routines
-#   that auto-joined chats and sent full config values (including API keys).
-# - Those behaviors were removed for security.
-# - If you need safe notifications, configure a secure log/group and only send
-#   non-sensitive messages (no tokens, no API_HASH, no string sessions).
 
 class Userbot:
     """
@@ -154,11 +148,20 @@ class Userbot:
         except Exception as exc:
             logger.exception("Error stopping assistants: %s", exc)
 
+    # 🔹 NEW ALIASES (to fix AttributeError in __main__.py)
+    async def start(self):
+        """Alias for start_assistants(), so you can call `await userbot.start()`"""
+        return await self.start_assistants()
+
+    async def stop(self):
+        """Alias for stop_assistants(), so you can call `await userbot.stop()`"""
+        return await self.stop_assistants()
+
 
 # Example usage (safe)
 async def main():
     ub = Userbot()
-    await ub.start_assistants()
+    await ub.start()
 
     # Safe info logging only (do NOT print secrets)
     bot_uname = await ub.get_bot_username_from_token(getattr(config, "BOT_TOKEN", None))
@@ -168,7 +171,7 @@ async def main():
     # await asyncio.sleep(...) or integrate with your main program
 
     # when shutting down:
-    # await ub.stop_assistants()
+    # await ub.stop()
 
 
 if __name__ == "__main__":
