@@ -4,7 +4,9 @@ import config
 
 from ..logging import LOGGER
 
-assistants =
+assistants = []
+assistantids = []
+
 class Userbot(Client):
     def __init__(self):
         self.one = Client(
