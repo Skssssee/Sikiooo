@@ -71,13 +71,13 @@ async def auto_state(_, message):
 
         if state == "on":
             if A and not A.get("disabled", False):
-                return await message.reply_text("✦ Special Welcome Already Enabled")
+                return await message.reply_text("Special Welcome Already Enabled")
             await wlcm.update_one({"chat_id": chat_id}, {"$set": {"disabled": False}}, upsert=True)
             await message.reply_text(f"✦ Enabled Special Welcome in {message.chat.title}")
 
         elif state == "off":
             if A and A.get("disabled", False):
-                return await message.reply_text("✦ Special Welcome Already Disabled")
+                return await message.reply_text("Special Welcome Already Disabled")
             await wlcm.update_one({"chat_id": chat_id}, {"$set": {"disabled": True}}, upsert=True)
             await message.reply_text(f"✦ Disabled Special Welcome in {message.chat.title}")
 
@@ -141,7 +141,7 @@ async def greet_group(_, member: ChatMemberUpdated):
 
 ✨ <b>ғᴇᴇʟ ғʀᴇᴇ ᴛᴏ sʜᴀʀᴇ ᴀɴᴅ ᴇɴᴊᴏʏ!</b> ✨
 
-<blockquote><b>💝 ᴘᴏᴡᴇʀᴇᴅ ʙʏ ➤ <a href="https://t.me/{app.username}?start=help">Mᴜsɪᴄ ʙᴏᴛs🎶💖</a></b></blockquote>
+<blockquote><b>💝 ᴘᴏᴡᴇʀᴇᴅ ʙʏ ➤ <a href="https://t.me/TNCnetwork">ＴＮＣ // 𝖭ꫀƚω𝗈як</a></b></blockquote>
 
 🌸✨ ──────────────────── ✨🌸
 """,
