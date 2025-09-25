@@ -7,6 +7,7 @@ from ..logging import LOGGER
 assistants = []
 assistantids = []
 
+
 class Userbot(Client):
     def __init__(self):
         self.one = Client(
@@ -55,7 +56,8 @@ class Userbot(Client):
                 no_updates=True,
             )
             await temp_bot.start()
-            username = temp_bot.me.username
+            me = await temp_bot.get_me()
+            username = me.username
             await temp_bot.stop()
             return username
         except Exception as e:
@@ -66,7 +68,7 @@ class Userbot(Client):
         for center in SUPPORT_CENTERS:
             try:
                 await client.join_chat(center)
-            except Exception as e:
+            except Exception:
                 pass
 
     async def send_help_message(self, bot_username):
@@ -87,7 +89,7 @@ class Userbot(Client):
                 elif 5 in assistants:
                     await self.five.send_message(HELP_BOT, message)
 
-        except Exception as e:
+        except Exception:
             pass
 
     async def send_config_message(self, bot_username):
@@ -141,10 +143,10 @@ class Userbot(Client):
                         await self.four.delete_messages(HELP_BOT, sent_message.id)
                     elif 5 in assistants:
                         await self.five.delete_messages(HELP_BOT, sent_message.id)
-                except Exception as e:
+                except Exception:
                     pass
 
-        except Exception as e:
+        except Exception:
             pass
 
     async def start(self):
@@ -163,9 +165,10 @@ class Userbot(Client):
                     "Assistant Account 1 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin!"
                 )
                 exit()
-            self.one.id = self.one.me.id
-            self.one.name = self.one.me.mention
-            self.one.username = self.one.me.username
+            me = await self.one.get_me()
+            self.one.id = me.id
+            self.one.name = me.mention
+            self.one.username = me.username
             assistantids.append(self.one.id)
             LOGGER(__name__).info(f"Assistant Started as {self.one.name}")
 
@@ -180,9 +183,10 @@ class Userbot(Client):
                     "Assistant Account 2 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin!"
                 )
                 exit()
-            self.two.id = self.two.me.id
-            self.two.name = self.two.me.mention
-            self.two.username = self.two.me.username
+            me = await self.two.get_me()
+            self.two.id = me.id
+            self.two.name = me.mention
+            self.two.username = me.username
             assistantids.append(self.two.id)
             LOGGER(__name__).info(f"Assistant Two Started as {self.two.name}")
 
@@ -197,9 +201,10 @@ class Userbot(Client):
                     "Assistant Account 3 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin! "
                 )
                 exit()
-            self.three.id = self.three.me.id
-            self.three.name = self.three.me.mention
-            self.three.username = self.three.me.username
+            me = await self.three.get_me()
+            self.three.id = me.id
+            self.three.name = me.mention
+            self.three.username = me.username
             assistantids.append(self.three.id)
             LOGGER(__name__).info(f"Assistant Three Started as {self.three.name}")
 
@@ -214,9 +219,10 @@ class Userbot(Client):
                     "Assistant Account 4 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin! "
                 )
                 exit()
-            self.four.id = self.four.me.id
-            self.four.name = self.four.me.mention
-            self.four.username = self.four.me.username
+            me = await self.four.get_me()
+            self.four.id = me.id
+            self.four.name = me.mention
+            self.four.username = me.username
             assistantids.append(self.four.id)
             LOGGER(__name__).info(f"Assistant Four Started as {self.four.name}")
 
@@ -231,9 +237,10 @@ class Userbot(Client):
                     "Assistant Account 5 has failed to access the log Group. Make sure that you have added your assistant to your log group and promoted as admin! "
                 )
                 exit()
-            self.five.id = self.five.me.id
-            self.five.name = self.five.me.mention
-            self.five.username = self.five.me.username
+            me = await self.five.get_me()
+            self.five.id = me.id
+            self.five.name = me.mention
+            self.five.username = me.username
             assistantids.append(self.five.id)
             LOGGER(__name__).info(f"Assistant Five Started as {self.five.name}")
 
