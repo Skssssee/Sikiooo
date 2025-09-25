@@ -2,6 +2,10 @@
 # Location: Supaul, Bihar
 #
 # All rights reserved.
+#
+# This code is the intellectual property of Nand Yaduwanshi.
+# You are not allowed to copy, modify, redistribute, or use this
+# code for commercial or personal projects without explicit permission.
 
 import asyncio
 import importlib
@@ -9,7 +13,8 @@ from pyrogram import idle
 from pyrogram.types import BotCommand
 from pytgcalls.exceptions import NoActiveGroupCall
 import config
-from ShrutiMusic import LOGGER, app, userbot
+from ShrutiMusic import LOGGER, app
+from ShrutiMusic.userbot import Userbot  # <-- corrected import
 from ShrutiMusic.core.call import Nand
 from ShrutiMusic.misc import sudo
 from ShrutiMusic.plugins import ALL_MODULES
@@ -25,7 +30,7 @@ COMMANDS = [
     BotCommand("vplay", "📹 Start video streaming"),
     BotCommand("playrtmps", "📺 Play Live Video"),
     BotCommand("playforce", "⚠️ Force play audio track"),
-    BotCommand("vplayforce", "⚠️ Force play video track"),
+    BotCommand("vplayforce", "🚨 Force play video track"),
     BotCommand("pause", "⏸ Pause the stream"),
     BotCommand("resume", "▶️ Resume the stream"),
     BotCommand("skip", "⏭ Skip the current track"),
@@ -87,15 +92,14 @@ async def init():
 
     LOGGER("ShrutiMusic.plugins").info("Successfully Imported Modules...")
 
-    # ------------------ FIXED BLOCK ------------------
-    userbot_instance = userbot.Userbot()              # instantiate Userbot
-    await userbot_instance.start_assistants()        # start all configured assistants
-    # ---------------------------------------------------
+    # Start userbot assistants
+    userbot_instance = Userbot()  # instantiate Userbot
+    await userbot_instance.start_assistants()
 
     # Start PyTgCalls
     await Nand.start()
     try:
-        await Nand.stream_call("https://te.legra.ph/file/29f784eb49d230ab62e9e.mp4")
+        await Nand.stream_call("https://te.legra.ph/file/29f784eb49d230ab62e9.mp4")
     except NoActiveGroupCall:
         LOGGER("ShrutiMusic").error(
             "Please turn on the videochat of your log group/channel.\nStopping Bot..."
@@ -112,11 +116,9 @@ async def init():
 
     await idle()
 
-    # ------------------ FIXED BLOCK ------------------
-    await userbot_instance.stop_assistants()         # stop assistants safely
-    # ---------------------------------------------------
-
+    # Stop everything safely
     await app.stop()
+    await userbot_instance.stop_assistants()
     LOGGER("ShrutiMusic").info("Stopping Shruti Music Bot...🥺")
 
 if __name__ == "__main__":
