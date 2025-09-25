@@ -129,20 +129,22 @@ def PlayWrapper(command):
                     _["call_3"].format(app.mention, f"get_me failed: {type(e).__name__}")
                 )
 
-            # Ensure peer is known to both app + userbot
+            # Ensure peer is known
             try:
-                await app.resolve_peer(chat_id)
-                await userbot.resolve_peer(chat_id)
+                await app.get_chat(chat_id)
+                await userbot.get_chat(chat_id)
             except Exception:
                 pass
 
             try:
                 get = await app.get_chat_member(chat_id, me.id)
+
                 if get.status in [ChatMemberStatus.BANNED, ChatMemberStatus.RESTRICTED]:
                     return await message.reply_text(
                         _["call_2"].format(app.mention, me.id, me.first_name, me.username or "NA")
                     )
-            except UserNotParticipant:
+
+            except (UserNotParticipant, PeerIdInvalid):
                 if chat_id in links:
                     invitelink = links[chat_id]
                 elif message.chat.username:
