@@ -138,9 +138,10 @@ def PlayWrapper(command):
 
         if not await is_active_chat(chat_id):
             userbot = await get_assistant(chat_id)
+            await userbot.start()  # ⚠️ Ensure the client is started before accessing .me
             try:
                 try:
-                    get = await app.get_chat_member(chat_id, userbot.id)
+                    get = await app.get_chat_member(chat_id, userbot.me.id)
                 except ChatAdminRequired:
                     return await message.reply_text(_["call_1"])
                 if (
@@ -149,7 +150,7 @@ def PlayWrapper(command):
                 ):
                     return await message.reply_text(
                         _["call_2"].format(
-                            app.mention, userbot.id, userbot.name, userbot.username
+                            app.mention, userbot.me.id, userbot.me.first_name, userbot.me.username
                         )
                     )
             except UserNotParticipant:
@@ -182,7 +183,7 @@ def PlayWrapper(command):
                     await userbot.join_chat(invitelink)
                 except InviteRequestSent:
                     try:
-                        await app.approve_chat_join_request(chat_id, userbot.id)
+                        await app.approve_chat_join_request(chat_id, userbot.me.id)
                     except Exception as e:
                         return await message.reply_text(
                             _["call_3"].format(app.mention, type(e).__name__)
@@ -227,4 +228,4 @@ def PlayWrapper(command):
 # ===========================================
 
 
-# ❤️ Love From ShrutiBots 
+# ❤️ Love From ShrutiBots
