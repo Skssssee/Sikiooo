@@ -135,66 +135,67 @@ def PlayWrapper(command):
         else:
             fplay = None
 
-        if not await is_active_chat(chat_id):
-            userbot = await get_assistant(chat_id)
-            me = await userbot.get_me()   # ✅ fetch assistant info
-            try:
+if not await is_active_chat(chat_id):
+    userbot = await get_assistant(chat_id)
+
+    if not userbot.is_connected:
+        await userbot.start()
+
+    try:
+        me = await userbot.get_me()   
+    except Exception as e:
+        return await message.reply_text(
+            _["call_3"].format(app.mention, f"get_me failed: {type(e).__name__}")
+        )
+
+    try:
+        get = await app.get_chat_member(chat_id, me.id)
+        if get.status in [ChatMemberStatus.BANNED, ChatMemberStatus.RESTRICTED]:
+            return await message.reply_text(
+                _["call_2"].format(
+                    app.mention, me.id, me.first_name, me.username or "NA"
+                )
+            )
+    except UserNotParticipant:
+        if chat_id in links:
+            invitelink = links[chat_id]
+        else:
+            if message.chat.username:
+                invitelink = message.chat.username
+            else:
                 try:
-                    get = await app.get_chat_member(chat_id, me.id)
+                    invitelink = await app.export_chat_invite_link(chat_id)
                 except ChatAdminRequired:
                     return await message.reply_text(_["call_1"])
-                if (
-                    get.status == ChatMemberStatus.BANNED
-                    or get.status == ChatMemberStatus.RESTRICTED
-                ):
-                    return await message.reply_text(
-                        _["call_2"].format(
-                            app.mention, me.id, me.first_name, me.username or "NA"
-                        )
-                    )
-            except UserNotParticipant:
-                if chat_id in links:
-                    invitelink = links[chat_id]
-                else:
-                    if message.chat.username:
-                        invitelink = message.chat.username
-                        try:
-                            await userbot.resolve_peer(invitelink)
-                        except:
-                            pass
-                    else:
-                        try:
-                            invitelink = await app.export_chat_invite_link(chat_id)
-                        except ChatAdminRequired:
-                            return await message.reply_text(_["call_1"])
-                        except Exception as e:
-                            return await message.reply_text(
-                                _["call_3"].format(app.mention, type(e).__name__)
-                            )
-
-                if invitelink.startswith("https://t.me/+"):
-                    invitelink = invitelink.replace(
-                        "https://t.me/+", "https://t.me/joinchat/"
-                    )
-                myu = await message.reply_text(_["call_4"].format(app.mention))
-                try:
-                    await asyncio.sleep(1)
-                    await userbot.join_chat(invitelink)
-                except InviteRequestSent:
-                    try:
-                        await app.approve_chat_join_request(chat_id, me.id)
-                    except Exception as e:
-                        return await message.reply_text(
-                            _["call_3"].format(app.mention, type(e).__name__)
-                        )
-                    await asyncio.sleep(3)
-                    await myu.edit(_["call_5"].format(app.mention))
-                except UserAlreadyParticipant:
-                    pass
                 except Exception as e:
                     return await message.reply_text(
                         _["call_3"].format(app.mention, type(e).__name__)
                     )
+        if invitelink.startswith("https://t.me/+"):
+            invitelink = invitelink.replace(
+                "https://t.me/+", "https://t.me/joinchat/"
+            )
+        links[chat_id] = invitelink
+        myu = await message.reply_text(_["call_4"].format(app.mention))
+        try:
+            await asyncio.sleep(1)
+            await userbot.join_chat(invitelink)
+            await myu.edit(_["call_5"].format(app.mention))
+        except InviteRequestSent:
+            try:
+                await app.approve_chat_join_request(chat_id, me.id)
+            except Exception as e:
+                return await message.reply_text(
+                    _["call_3"].format(app.mention, type(e).__name__)
+                )
+            await asyncio.sleep(3)
+            await myu.edit(_["call_5"].format(app.mention))
+        except UserAlreadyParticipant:
+            pass
+        except Exception as e:
+            return await message.reply_text(
+                _["call_3"].format(app.mention, type(e).__name__)
+            )
 
                 links[chat_id] = invitelink
 
