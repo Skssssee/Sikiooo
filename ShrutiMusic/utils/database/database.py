@@ -1,25 +1,3 @@
-# Copyright (c) 2025 Nand Yaduwanshi <NoxxOP>
-# Location: Supaul, Bihar
-#
-# All rights reserved.
-#
-# This code is the intellectual property of Nand Yaduwanshi.
-# You are not allowed to copy, modify, redistribute, or use this
-# code for commercial or personal projects without explicit permission.
-#
-# Allowed:
-# - Forking for personal learning
-# - Submitting improvements via pull requests
-#
-# Not Allowed:
-# - Claiming this code as your own
-# - Re-uploading without credit or permission
-# - Selling or using commercially
-#
-# Contact for permissions:
-# Email: badboy809075@gmail.com
-
-
 import random
 import asyncio
 from datetime import date
@@ -96,6 +74,9 @@ async def set_assistant_new(chat_id, number):
 async def set_assistant(chat_id):
     from ShrutiMusic.core.userbot import assistants
 
+    if not assistants:
+        raise RuntimeError("❌ No assistants are available. Please check your STRING sessions.")
+
     ran_assistant = random.choice(assistants)
     assistantdict[chat_id] = ran_assistant
     await assdb.update_one(
@@ -103,8 +84,8 @@ async def set_assistant(chat_id):
         {"$set": {"assistant": ran_assistant}},
         upsert=True,
     )
-    userbot = await get_client(ran_assistant)
-    return userbot
+    userbot_client = await get_client(ran_assistant)
+    return userbot_client
 
 
 async def get_assistant(chat_id: int) -> str:
@@ -114,28 +95,31 @@ async def get_assistant(chat_id: int) -> str:
     if not assistant:
         dbassistant = await assdb.find_one({"chat_id": chat_id})
         if not dbassistant:
-            userbot = await set_assistant(chat_id)
-            return userbot
+            userbot_client = await set_assistant(chat_id)
+            return userbot_client
         else:
             got_assis = dbassistant["assistant"]
             if got_assis in assistants:
                 assistantdict[chat_id] = got_assis
-                userbot = await get_client(got_assis)
-                return userbot
+                userbot_client = await get_client(got_assis)
+                return userbot_client
             else:
-                userbot = await set_assistant(chat_id)
-                return userbot
+                userbot_client = await set_assistant(chat_id)
+                return userbot_client
     else:
         if assistant in assistants:
-            userbot = await get_client(assistant)
-            return userbot
+            userbot_client = await get_client(assistant)
+            return userbot_client
         else:
-            userbot = await set_assistant(chat_id)
-            return userbot
+            userbot_client = await set_assistant(chat_id)
+            return userbot_client
 
 
 async def set_calls_assistant(chat_id):
     from ShrutiMusic.core.userbot import assistants
+
+    if not assistants:
+        raise RuntimeError("❌ No assistants are available. Please check your STRING sessions.")
 
     ran_assistant = random.choice(assistants)
     assistantdict[chat_id] = ran_assistant
