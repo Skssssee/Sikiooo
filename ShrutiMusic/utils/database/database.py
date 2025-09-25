@@ -72,6 +72,7 @@ async def set_assistant_new(chat_id, number):
 
 
 async def set_assistant(chat_id):
+    """Pick a random assistant, store it, and ensure it is started"""
     from ShrutiMusic.core.userbot import assistants
 
     if not assistants:
@@ -84,35 +85,43 @@ async def set_assistant(chat_id):
         {"$set": {"assistant": ran_assistant}},
         upsert=True,
     )
+
     userbot_client = await get_client(ran_assistant)
+
+    # ✅ Ensure assistant client is started
+    if not userbot_client.is_connected:
+        await userbot_client.start()
+
     return userbot_client
 
 
-async def get_assistant(chat_id: int) -> str:
+async def get_assistant(chat_id: int):
+    """Get an assistant for the given chat, start it if not already running"""
     from ShrutiMusic.core.userbot import assistants
 
     assistant = assistantdict.get(chat_id)
     if not assistant:
         dbassistant = await assdb.find_one({"chat_id": chat_id})
         if not dbassistant:
-            userbot_client = await set_assistant(chat_id)
-            return userbot_client
+            return await set_assistant(chat_id)
         else:
             got_assis = dbassistant["assistant"]
             if got_assis in assistants:
                 assistantdict[chat_id] = got_assis
                 userbot_client = await get_client(got_assis)
+                if not userbot_client.is_connected:
+                    await userbot_client.start()
                 return userbot_client
             else:
-                userbot_client = await set_assistant(chat_id)
-                return userbot_client
+                return await set_assistant(chat_id)
     else:
         if assistant in assistants:
             userbot_client = await get_client(assistant)
+            if not userbot_client.is_connected:
+                await userbot_client.start()
             return userbot_client
         else:
-            userbot_client = await set_assistant(chat_id)
-            return userbot_client
+            return await set_assistant(chat_id)
 
 
 async def set_calls_assistant(chat_id):
