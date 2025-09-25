@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 assistants = []     # list of assistant indices that were started (1..5)
 assistant_ids = []  # actual numeric user ids for started assistants
 
+
 class Userbot:
     """
     Manage up to 5 assistant Pyrogram Clients.
@@ -95,18 +96,15 @@ class Userbot:
         # Helper to start a client and log minimal info
         async def _start_and_register(client_obj, idx):
             try:
-                if client_obj.session_name is None and client_obj.session_string is None:
-                    # nothing configured for this assistant
+                # Only check if session_string exists
+                if getattr(client_obj, "session_string", None) is None:
                     return False
                 await client_obj.start()
-                me = await client_obj.get_me()   # ✅ fetch identity once
-                # attach attributes for later use
-                client_obj.id = me.id
-                client_obj.username = me.username
-                client_obj.first_name = me.first_name
+                uid = client_obj.me.id
+                uname = getattr(client_obj.me, "username", None)
                 assistants.append(idx)
-                assistant_ids.append(me.id)
-                logger.info("Assistant %d started: id=%s username=%s", idx, me.id, me.username)
+                assistant_ids.append(uid)
+                logger.info("Assistant %d started: id=%s username=%s", idx, uid, uname)
                 return True
             except Exception as exc:
                 logger.exception("Assistant %d failed to start: %s", idx, exc)
