@@ -2,10 +2,6 @@
 # Location: Supaul, Bihar
 #
 # All rights reserved.
-#
-# This code is the intellectual property of Nand Yaduwanshi.
-# You are not allowed to copy, modify, redistribute, or use this
-# code for commercial or personal projects without explicit permission.
 
 import asyncio
 import importlib
@@ -91,8 +87,10 @@ async def init():
 
     LOGGER("ShrutiMusic.plugins").info("Successfully Imported Modules...")
 
-    # Start userbot assistants
-    await userbot.start()
+    # ------------------ FIXED BLOCK ------------------
+    userbot_instance = userbot.Userbot()              # instantiate Userbot
+    await userbot_instance.start_assistants()        # start all configured assistants
+    # ---------------------------------------------------
 
     # Start PyTgCalls
     await Nand.start()
@@ -114,9 +112,11 @@ async def init():
 
     await idle()
 
-    # Stop everything safely
+    # ------------------ FIXED BLOCK ------------------
+    await userbot_instance.stop_assistants()         # stop assistants safely
+    # ---------------------------------------------------
+
     await app.stop()
-    await userbot.stop()
     LOGGER("ShrutiMusic").info("Stopping Shruti Music Bot...🥺")
 
 if __name__ == "__main__":
