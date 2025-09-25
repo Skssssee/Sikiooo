@@ -6,6 +6,7 @@ from pyrogram.errors import (
     InviteRequestSent,
     UserAlreadyParticipant,
     UserNotParticipant,
+    PeerIdInvalid,
 )
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -38,6 +39,7 @@ def PlayWrapper(command):
             )
             return await message.reply_text(_["general_3"], reply_markup=upl)
 
+        # Maintenance check
         if await is_maintenance() is False:
             if message.from_user.id not in SUDOERS:
                 return await message.reply_text(
@@ -50,6 +52,7 @@ def PlayWrapper(command):
         except:
             pass
 
+        # File / URL detection
         audio_telegram = (
             (message.reply_to_message.audio or message.reply_to_message.voice)
             if message.reply_to_message
@@ -73,22 +76,28 @@ def PlayWrapper(command):
                     reply_markup=InlineKeyboardMarkup(buttons),
                 )
 
+        # Handle channel play mode
         if message.command[0][0] == "c":
             chat_id = await get_cmode(message.chat.id)
             if chat_id is None:
                 return await message.reply_text(_["setting_7"])
             try:
-                chat = await app.get_chat(chat_id)
-            except:
+                chat = await app.get_chat(chat_id)  # resolves peer
+            except Exception:
                 return await message.reply_text(_["cplay_4"])
             channel = chat.title
         else:
             chat_id = message.chat.id
+            try:
+                await app.get_chat(chat_id)  # resolve peer early
+            except Exception:
+                return await message.reply_text(_["cplay_4"])
             channel = None
 
         playmode = await get_playmode(message.chat.id)
         playty = await get_playtype(message.chat.id)
 
+        # Permission check
         if playty != "Everyone" and message.from_user.id not in SUDOERS:
             admins = adminlist.get(message.chat.id)
             if not admins:
@@ -96,6 +105,7 @@ def PlayWrapper(command):
             if message.from_user.id not in admins:
                 return await message.reply_text(_["play_4"])
 
+        # Video flag
         if message.command[0][0] == "v":
             video = True
         else:
@@ -105,7 +115,7 @@ def PlayWrapper(command):
         if fplay is None:
             fplay = None
 
-        # ✅ Assistant join block with proper indentation
+        # ✅ Assistant join block
         if not await is_active_chat(chat_id):
             userbot = await get_assistant(chat_id)
 
@@ -119,6 +129,13 @@ def PlayWrapper(command):
                     _["call_3"].format(app.mention, f"get_me failed: {type(e).__name__}")
                 )
 
+            # Ensure peer is known to both app + userbot
+            try:
+                await app.resolve_peer(chat_id)
+                await userbot.resolve_peer(chat_id)
+            except Exception:
+                pass
+
             try:
                 get = await app.get_chat_member(chat_id, me.id)
                 if get.status in [ChatMemberStatus.BANNED, ChatMemberStatus.RESTRICTED]:
@@ -129,7 +146,7 @@ def PlayWrapper(command):
                 if chat_id in links:
                     invitelink = links[chat_id]
                 elif message.chat.username:
-                    invitelink = message.chat.username
+                    invitelink = f"https://t.me/{message.chat.username}"
                 else:
                     try:
                         invitelink = await app.export_chat_invite_link(chat_id)
@@ -165,11 +182,7 @@ def PlayWrapper(command):
                         _["call_3"].format(app.mention, type(e).__name__)
                     )
 
-                try:
-                    await userbot.resolve_peer(chat_id)
-                except:
-                    pass
-
+        # 🔹 Final call
         return await command(
             client,
             message,
