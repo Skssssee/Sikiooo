@@ -12,7 +12,7 @@ load_dotenv()
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-OWNER_ID = int(os.getenv("OWNER_ID", "6395780961"))
+OWNER_ID = int(os.getenv("OWNER_ID", None))
 OWNER_USERNAME = os.getenv("OWNER_USERNAME", "Lord_sikio")
 BOT_USERNAME = os.getenv("BOT_USERNAME", "ganpatmusicbot")
 
@@ -21,7 +21,7 @@ BOT_USERNAME = os.getenv("BOT_USERNAME", "ganpatmusicbot")
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 MONGO_DB_URI = os.getenv("MONGO_DB_URI", None)
-LOG_GROUP_ID = int(os.getenv("LOG_GROUP_ID", "-1002921174700"))
+LOG_GROUP_ID = int(os.getenv("LOG_GROUP_ID", None))
 HEROKU_APP_NAME = os.getenv("HEROKU_APP_NAME")
 HEROKU_API_KEY = os.getenv("HEROKU_API_KEY")
 
@@ -29,7 +29,7 @@ HEROKU_API_KEY = os.getenv("HEROKU_API_KEY")
 # 🔄 Git & Update Settings
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "https://github.com/sexyxcoders/Sikiooo")
+UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "https://github.com/sexyxcoders/Sikio-music")
 UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "main")
 GIT_TOKEN = os.getenv("GIT_TOKEN", None)
 
@@ -37,7 +37,7 @@ GIT_TOKEN = os.getenv("GIT_TOKEN", None)
 # 🔗 Support Links
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-SUPPORT_CHANNEL = os.getenv("SUPPORT_CHANNEL", "https://t.me/TNCnetwork")
+SUPPORT_CHANNEL = os.getenv("SUPPORT_CHANNEL", "https://t.me/HamsterUpdatess")
 SUPPORT_GROUP = os.getenv("SUPPORT_GROUP", "https://t.me/ganpat_music")
 PRIVACY_LINK = os.getenv("PRIVACY_LINK", "https://graph.org/Privacy-Policy-05-01-30")
 
@@ -45,7 +45,7 @@ PRIVACY_LINK = os.getenv("PRIVACY_LINK", "https://graph.org/Privacy-Policy-05-01
 # ⏱️ Duration & Playlist Settings
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-DURATION_LIMIT_MIN = int(os.getenv("DURATION_LIMIT", 1800000))
+DURATION_LIMIT_MIN = int(os.getenv("DURATION_LIMIT", 300))
 PLAYLIST_FETCH_LIMIT = int(os.getenv("PLAYLIST_FETCH_LIMIT", 25))
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
