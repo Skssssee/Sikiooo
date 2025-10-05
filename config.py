@@ -15,9 +15,9 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 OWNER_ID = int(os.getenv("OWNER_ID", None))
 OWNER_USERNAME = os.getenv("OWNER_USERNAME", "Lord_sikio")
 BOT_USERNAME = os.getenv("BOT_USERNAME", "ganpatmusicbot")
-API_URL = getenv("API_URL", 'https://api.thequickearn.xyz') #youtube song url
-VIDEO_API_URL = getenv("VIDEO_API_URL", 'https://api.video.thequickearn.xyz')
-API_KEY = getenv("API_KEY", 'NxGBNexGenBots5b2d9a')
+API_URL = os.getenv("API_URL", 'https://api.thequickearn.xyz') #youtube song url
+VIDEO_API_URL = os.getenv("VIDEO_API_URL", 'https://api.video.thequickearn.xyz')
+API_KEY = os.getenv("API_KEY", 'NxGBNexGenBots5b2d9a')
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 🛠️ Database & Deployment Configs
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
